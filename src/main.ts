@@ -37,6 +37,15 @@ async function boot() {
   const resize = () => { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); };
   addEventListener('resize', resize); resize();
 
+  // Safari en iOS ignora user-scalable=no: se bloquean pellizco y doble toque a mano.
+  const stop = (e: Event) => e.preventDefault(), np = { passive: false } as const;
+  for (const ev of ['gesturestart', 'gesturechange', 'gestureend', 'dblclick']) document.addEventListener(ev, stop, np);
+  const inMenu = (e: Event) => e.target instanceof Element && !!e.target.closest('.screen');
+  document.addEventListener('touchstart', (e) => { if (e.touches.length > 1 || !inMenu(e)) e.preventDefault(); }, np);
+  document.addEventListener('touchmove', (e) => { if (e.touches.length > 1 || !inMenu(e)) e.preventDefault(); }, np);
+  let lastTap = 0;
+  document.addEventListener('touchend', (e) => { const now = performance.now(); if (now - lastTap < 350 && !(e.target instanceof Element && e.target.closest('button'))) e.preventDefault(); lastTap = now; }, np);
+
   // --- Entrada -------------------------------------------------------------
   const keys = new Set<string>(), touch = { l: false, r: false, gas: false, drift: false, item: false, brake: false };
   let itemEdge = false;
