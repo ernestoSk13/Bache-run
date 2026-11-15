@@ -1,13 +1,13 @@
 :root { --asf: #1b1a1d; --asf2: #2a282d; --am: #ffc61a; --na: #ff5a1f; --ve: #0b6b4a; --ar: #f6ecd6; --gr: #c9bda6; --ln: #4a4650; }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
-html, body { margin: 0; height: 100%; overflow: hidden; background: var(--asf); color: var(--ar); font-family: Barlow, system-ui, sans-serif; -webkit-user-select: none; user-select: none; touch-action: none; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--asf); color: var(--ar); font-family: Barlow, system-ui, sans-serif; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; touch-action: none; }
 #game { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
 #ui { position: fixed; inset: 0; pointer-events: none; font-size: clamp(11px, 1.25vw, 18px); }
 #ui > * { pointer-events: auto; }
 .d { font-family: 'Bowlby One', Impact, sans-serif; font-weight: 400; line-height: 1; margin: 0; }
 .c { font-family: 'Barlow Condensed', 'Arial Narrow', sans-serif; text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
-.screen { position: absolute; inset: 0; background: rgba(27, 26, 29, .93); padding: 4.5vh 5.5vw; display: flex; flex-direction: column; gap: 2vh; overflow: auto; }
+.screen { touch-action: pan-y; position: absolute; inset: 0; background: rgba(27, 26, 29, .93); padding: 4.5vh 5.5vw; display: flex; flex-direction: column; gap: 2vh; overflow: auto; }
 .btn { font-family: 'Bowlby One', Impact, sans-serif; font-size: 1.4em; padding: .6em 1.2em; background: var(--na); color: var(--asf); border: 4px solid var(--asf); box-shadow: 5px 5px 0 var(--ar); cursor: pointer; min-height: 44px; }
 .btn:hover, .btn:focus-visible { background: var(--am); outline: none; }
 .btn.g { background: var(--asf2); color: var(--ar); border-color: var(--ln); box-shadow: none; font-size: 1.1em; }
@@ -49,4 +49,38 @@ tr.me td { background: var(--am); color: var(--asf); }
 .touch button { position: absolute; pointer-events: auto; border-radius: 50%; border: 4px solid var(--ar); background: rgba(27, 26, 29, .6); color: var(--ar); font-family: 'Bowlby One', Impact, sans-serif; font-size: 1.1em; touch-action: none; }
 @media (pointer: coarse) { .touch { display: block; } #ui { font-size: clamp(10px, 1.7vw, 16px); } }
 .credit { font-size: .8em; color: var(--gr); line-height: 1.5; max-width: 60em; }
-@media (orientation: portrait) and (pointer: coarse) { #rot { display: flex !important; } }
+
+/* --- Vertical (telefono en retrato) -------------------------------------- */
+@media (orientation: portrait) {
+  #ui { font-size: clamp(11px, 3.3vw, 18px) !important; --top: calc(env(safe-area-inset-top, 0px) + 1.2vh); --bot: calc(env(safe-area-inset-bottom, 0px) + 3vh); }
+  .screen { padding: calc(env(safe-area-inset-top, 0px) + 3vh) 5vw calc(env(safe-area-inset-bottom, 0px) + 3vh); }
+  .screen .row { flex-wrap: wrap !important; gap: 1em !important; }
+  .screen .row > .grid, .screen .row > .panel, .screen .row > table, .screen .row > div { flex: 1 1 100% !important; }
+  .screen .row > span { margin-left: 0 !important; }
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .tile { min-height: 6em; }
+  .title { background: rgba(27, 26, 29, .78); }
+  .title h1 { font-size: 25vw; }
+  .ticket { min-width: 0; transform: none; }
+  .h-item { left: 3vw !important; top: var(--top) !important; max-width: 52vw; }
+  .h-key { display: none; }
+  .h-mini { right: 3vw !important; top: var(--top) !important; }
+  .h-mini canvas { width: 9em !important; height: 6.1em !important; }
+  .h-lap { top: calc(var(--top) + 9.4em) !important; right: 3vw; left: auto !important; transform: none !important; gap: 1.2em !important; }
+  .h-susp { top: calc(var(--top) + 9.4em) !important; bottom: auto !important; left: 3vw !important; transform: none !important; width: 50vw !important; }
+  .h-susp #hits { display: none; }
+  .toast { top: calc(var(--top) + 17em); font-size: 1.6em; }
+  .lights { top: calc(var(--top) + 15em); }
+  .count { top: calc(var(--top) + 22em); }
+  .pos { left: 3vw; bottom: calc(var(--bot) + 3.9em); font-size: 4.2em; }
+  #ok { position: fixed; left: 5vw; right: 5vw; bottom: calc(env(safe-area-inset-bottom, 0px) + 2vh); z-index: 5; }
+  .screen:has(#ok) { padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 2vh + 5.5em); }
+  .h-kmh { right: 3vw !important; bottom: calc(var(--bot) + 15.5em) !important; padding: .3em .6em; }
+  .h-kmh #kmh { font-size: 2.4em !important; }
+  .touch button[data-k="l"] { left: 4vw !important; bottom: var(--bot) !important; width: 5.6em !important; height: 5.6em !important; font-size: 1.3em !important; }
+  .touch button[data-k="r"] { left: calc(4vw + 6.1em) !important; bottom: var(--bot) !important; width: 5.6em !important; height: 5.6em !important; font-size: 1.3em !important; }
+  .touch button[data-k="gas"] { right: 4vw !important; bottom: var(--bot) !important; width: 8.4em !important; height: 8.4em !important; }
+  .touch button[data-k="drift"] { right: 4vw !important; bottom: calc(var(--bot) + 12.5em) !important; width: 7.4em !important; height: 7.4em !important; font-size: .7em !important; }
+  .touch button[data-k="item"] { right: calc(4vw + 8em) !important; bottom: calc(var(--bot) + 12.5em) !important; width: 7.4em !important; height: 7.4em !important; font-size: .7em !important; }
+  .touch button[data-k="brake"] { left: 4vw !important; bottom: calc(var(--bot) + 12.5em) !important; width: 7.4em !important; height: 7.4em !important; font-size: .7em !important; }
+}

@@ -9,7 +9,7 @@ npm install
 npm run dev
 ```
 
-Controles: flechas o WASD para manejar, Shift para derrapar, Espacio para usar el objeto. Funciona con mando y con botones táctiles.
+Controles: flechas o WASD para manejar, Shift para derrapar, Espacio para usar el objeto. Funciona con mando y con botones táctiles, en horizontal o en vertical.
 
 ## Qué hay
 

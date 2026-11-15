@@ -100,12 +100,12 @@ async function boot() {
 
   function buildHud() {
     hud = $(`<div class="hud">
-      <div class="x" style="left:2.4vw;top:3vh;display:flex;gap:.9em;align-items:center"><div id="slot" style="width:4.4em;height:4.4em;background:var(--ar);border:5px solid var(--am);display:flex;align-items:center;justify-content:center;color:var(--asf)" class="d"></div><div><div class="c e">Objeto · Espacio</div><div class="d" id="item" style="font-size:1.15em">SIN OBJETO</div></div></div>
-      <div class="x" style="left:50%;top:3vh;transform:translateX(-50%);display:flex;gap:2.5em"><div><div class="c e">Vuelta</div><div class="d" style="font-size:1.8em" id="lap"></div></div><div style="text-align:right"><div class="c e">Tiempo</div><div class="d" style="font-size:1.8em;font-variant-numeric:tabular-nums" id="time"></div></div></div>
-      <div class="x" style="right:2.4vw;top:3vh"><div class="c e">Bulevar Bachependencia</div><canvas id="mini" width="220" height="150" style="width:11em;height:7.5em;display:block"></canvas></div>
+      <div class="x h-item" style="left:2.4vw;top:3vh;display:flex;gap:.9em;align-items:center"><div id="slot" style="width:4.4em;height:4.4em;background:var(--ar);border:5px solid var(--am);display:flex;align-items:center;justify-content:center;color:var(--asf)" class="d"></div><div><div class="c e h-key">Objeto · Espacio</div><div class="d" id="item" style="font-size:1.15em">SIN OBJETO</div></div></div>
+      <div class="x h-lap" style="left:50%;top:3vh;transform:translateX(-50%);display:flex;gap:2.5em"><div><div class="c e">Vuelta</div><div class="d" style="font-size:1.8em" id="lap"></div></div><div style="text-align:right"><div class="c e">Tiempo</div><div class="d" style="font-size:1.8em;font-variant-numeric:tabular-nums" id="time"></div></div></div>
+      <div class="x h-mini" style="right:2.4vw;top:3vh"><div class="c e">Bulevar Bachependencia</div><canvas id="mini" width="220" height="150" style="width:11em;height:7.5em;display:block"></canvas></div>
       <div class="pos d"><span id="pos"></span><small>de 8</small></div>
-      <div class="x" style="left:50%;bottom:3vh;transform:translateX(-50%);width:26em"><div style="display:flex;justify-content:space-between"><span class="c e">Suspensión</span><span class="c" style="font-size:.85em" id="hits"></span></div><div class="meter" style="margin:.4em 0"><div id="susp"></div></div><div style="font-size:.85em" id="tip"></div></div>
-      <div class="x" style="right:2.4vw;bottom:3vh;text-align:right"><div class="d" style="font-size:3.6em;font-variant-numeric:tabular-nums" id="kmh"></div><div class="c" style="color:var(--gr);font-size:.9em">km/h</div></div>
+      <div class="x h-susp" style="left:50%;bottom:3vh;transform:translateX(-50%);width:26em"><div style="display:flex;justify-content:space-between"><span class="c e">Suspensión</span><span class="c" style="font-size:.85em" id="hits"></span></div><div class="meter" style="margin:.4em 0"><div id="susp"></div></div><div style="font-size:.85em" id="tip"></div></div>
+      <div class="x h-kmh" style="right:2.4vw;bottom:3vh;text-align:right"><div class="d" style="font-size:3.6em;font-variant-numeric:tabular-nums" id="kmh"></div><div class="c" style="color:var(--gr);font-size:.9em">km/h</div></div>
       <div class="toast d" id="toast"></div>
       <div class="lights" id="lights" hidden><i></i><i></i><i></i></div><div class="count d" id="count"></div>
       <div class="touch"><button data-k="l" style="left:3vw;bottom:24vh;width:9em;height:9em;font-size:1em">‹</button><button data-k="r" style="left:calc(3vw + 10em);bottom:24vh;width:9em;height:9em">›</button>
@@ -143,7 +143,6 @@ async function boot() {
   }
 
   addEventListener('keydown', (e) => { if (e.code === 'Enter') { if (state === 'title') showSelect(); else if (state === 'select') startCount(); else if (state === 'results') startCount(); } });
-  ui.append($('<div id="rot" class="screen" style="display:none;z-index:9;align-items:center;justify-content:center;text-align:center"><h1 class="d" style="font-size:3em;color:var(--am)">DESVIACIÓN</h1><p style="font-size:1.6em">Gira tu teléfono a horizontal para correr.</p></div>'));
   showTitle();
 
   // --- Bucle ---------------------------------------------------------------
@@ -189,12 +188,12 @@ async function boot() {
     const fx = Math.sin(p.h), fz = Math.cos(p.h);
     if (state === 'title' || state === 'select' || state === 'results') {
       orbit += dt * 0.18; const c = state === 'results' ? p : race.cars[4];
-      tmp.set(c.x + Math.sin(orbit) * 15, 4.5, c.z + Math.cos(orbit) * 15); camPos.lerp(tmp, camPos.lengthSq() ? Math.min(1, dt * 2) : 1); camLook.set(c.x, 1.4, c.z); camera.fov = 50;
+      tmp.set(c.x + Math.sin(orbit) * 15, 4.5, c.z + Math.cos(orbit) * 15); camPos.lerp(tmp, camPos.lengthSq() ? Math.min(1, dt * 2) : 1); camLook.set(c.x, 1.4, c.z); camera.fov = camera.aspect < 1 ? 78 : 50;
     } else {
-      const back = 8.2 + p.model.length * 0.45, v = p.speed;
-      tmp.set(p.x - fx * back, 3.6 + p.model.length * 0.12, p.z - fz * back);
-      camPos.lerp(tmp, camPos.lengthSq() ? 1 - Math.exp(-dt * 7) : 1); camLook.set(p.x + fx * 7, 1.6, p.z + fz * 7);
-      camera.fov += (60 + v * 0.35 + (p.boost > 0 ? 9 : 0) - camera.fov) * Math.min(1, dt * 4);
+      const tall = camera.aspect < 1, back = (8.2 + p.model.length * 0.45) * (tall ? 1.25 : 1), v = p.speed;
+      tmp.set(p.x - fx * back, (3.6 + p.model.length * 0.12) * (tall ? 1.55 : 1), p.z - fz * back);
+      camPos.lerp(tmp, camPos.lengthSq() ? 1 - Math.exp(-dt * 7) : 1); camLook.set(p.x + fx * (tall ? 11 : 7), 1.6, p.z + fz * (tall ? 11 : 7));
+      camera.fov += ((tall ? 84 : 60) + v * (tall ? 0.2 : 0.35) + (p.boost > 0 ? 9 : 0) - camera.fov) * Math.min(1, dt * 4);
     }
     shake = Math.max(0, shake - dt * 2.2);
     camera.position.copy(camPos); camera.position.x += (Math.random() - 0.5) * shake * 0.5; camera.position.y += (Math.random() - 0.5) * shake * 0.5;
