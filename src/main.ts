@@ -27,14 +27,14 @@ const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'o
 const fechaCorta = (f?: string) => { const k = /^(\d{4})-(\d{2})$/.exec(f ?? ''); return k ? `${MESES[+k[2] - 1] ?? ''} ${k[1]}` : ''; };
 const metaDe = (b: BacheReal) => [b.colonia, b.estado === 'tapado' ? 'Ya lo taparon' : fechaCorta(b.fecha) && `Visto en ${fechaCorta(b.fecha)}`].filter(Boolean).join(' · ');
 
-async function loadBaches(conEjemplos: boolean): Promise<BacheReal[]> {
-  try {
-    const base = `${import.meta.env.BASE_URL}baches/`, raw: unknown = await (await fetch(`${base}baches.json`)).json();
-    if (!Array.isArray(raw)) return [];
+/** Carga las fotos en segundo plano para no retrasar el arranque; como mucho 10 al azar por sesion. */
+function loadBaches(conEjemplos: boolean, out: BacheReal[]) {
+  const base = `${import.meta.env.BASE_URL}baches/`;
+  fetch(`${base}baches.json`).then((r) => r.json()).then((raw: unknown) => {
+    if (!Array.isArray(raw)) return;
     const ok = raw.filter((b): b is BacheReal => !!b && typeof b.foto === 'string' && typeof b.ubicacion === 'string' && /^[\w.-]+$/.test(b.foto) && (conEjemplos || !b.ejemplo));
-    const res = await Promise.all(ok.map(async (b) => { const i = new Image(); i.src = b.url = base + b.foto; try { await i.decode(); return b; } catch { return null; } }));
-    return res.filter((b): b is BacheReal => !!b);
-  } catch { return []; }
+    for (const b of ok.sort(() => Math.random() - 0.5).slice(0, 10)) { const i = new Image(); i.src = b.url = base + b.foto; i.decode().then(() => out.push(b)).catch(() => undefined); }
+  }).catch(() => undefined);
 }
 
 async function boot() {
@@ -47,7 +47,8 @@ async function boot() {
   const camera = new THREE.PerspectiveCamera(62, 1, 0.3, 6000);
 
   const track = new Track(BACHEPENDENCIA);
-  const [world, reales] = await Promise.all([buildWorld(renderer, track), loadBaches(qs.has('ejemplos'))]);
+  const reales: BacheReal[] = []; loadBaches(qs.has('ejemplos'), reales);
+  const world = await buildWorld(renderer, track);
   if (LOW) world.sun.shadow.mapSize.set(1024, 1024);
 
   const resize = () => { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); };

@@ -101,3 +101,10 @@ tr.me td { background: var(--am); color: var(--asf); }
   .touch button[data-k="item"] { right: calc(4vw + 8em) !important; bottom: calc(var(--bot) + 12.5em) !important; width: 7.4em !important; height: 7.4em !important; font-size: .7em !important; }
   .touch button[data-k="brake"] { left: 4vw !important; bottom: calc(var(--bot) + 12.5em) !important; width: 7.4em !important; height: 7.4em !important; font-size: .7em !important; }
 }
+
+/* Telefono en horizontal: la tarjeta va arriba al centro, lejos de los botones. */
+@media (orientation: landscape) and (pointer: coarse) {
+  .foto { right: auto; left: 40vw; top: calc(3vh + 6em); width: 10.5em; font-size: .9em; transform: translateY(-40%) rotate(-2deg); }
+  .foto.on { transform: rotate(-2deg); }
+  .toast { left: 74%; }
+}
