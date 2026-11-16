@@ -52,6 +52,19 @@ tr.me td { background: var(--am); color: var(--asf); }
 @media (pointer: coarse) { .touch { display: block; } #ui { font-size: clamp(10px, 1.7vw, 16px); } }
 .credit { font-size: .8em; color: var(--gr); line-height: 1.5; max-width: 60em; }
 
+.foto { right: 2.4vw; top: calc(3vh + 12.5em); width: 13em; background: var(--ar); color: var(--asf); padding: .5em .5em .6em; transform: translateX(120%) rotate(2deg); opacity: 0; transition: transform .28s ease-out, opacity .28s; box-shadow: 4px 4px 0 var(--asf); line-height: 1.25; }
+.foto.on { transform: rotate(2deg); opacity: 1; }
+.foto img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; margin-bottom: .4em; }
+.foto .e { color: #a3320b; font-size: .75em; }
+.foto #fotoLoc { font-weight: 600; }
+.foto #fotoMeta { font-size: .8em; }
+.foto #fotoEj { position: absolute; left: .9em; top: .9em; background: var(--am); padding: .1em .5em; font-size: .8em; }
+.gal { display: grid; grid-template-columns: repeat(auto-fill, minmax(11em, 1fr)); gap: .7em; margin-top: .5em; }
+.gal figure { margin: 0; background: var(--ar); color: var(--asf); padding: .4em; }
+.gal img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+.gal figcaption { display: flex; flex-direction: column; font-size: .8em; padding-top: .3em; line-height: 1.25; }
+@media (prefers-reduced-motion: reduce) { .foto { transition: opacity .2s; transform: rotate(2deg); } }
+
 /* --- Vertical (telefono en retrato) -------------------------------------- */
 @media (orientation: portrait) {
   #ui { font-size: clamp(11px, 3.3vw, 18px) !important; --top: calc(env(safe-area-inset-top, 0px) + 1.2vh); --bot: calc(env(safe-area-inset-bottom, 0px) + 3vh); }
@@ -71,7 +84,9 @@ tr.me td { background: var(--am); color: var(--asf); }
   .h-lap { top: calc(var(--top) + 9.4em) !important; right: 3vw; left: auto !important; transform: none !important; gap: 1.2em !important; }
   .h-susp { top: calc(var(--top) + 9.4em) !important; bottom: auto !important; left: 3vw !important; transform: none !important; width: 50vw !important; }
   .h-susp #hits { display: none; }
-  .toast { top: calc(var(--top) + 17em); font-size: 1.6em; }
+  .toast { top: calc(var(--top) + 15em); left: 3vw; transform: rotate(-3deg); font-size: 1.5em; }
+  .foto { top: auto; right: 3vw; bottom: calc(var(--bot) + 24em); width: 10.5em; font-size: .9em; }
+  .gal { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .lights { top: calc(var(--top) + 15em); }
   .count { top: calc(var(--top) + 22em); }
   .pos { left: 3vw; bottom: calc(var(--bot) + 3.9em); font-size: 4.2em; }

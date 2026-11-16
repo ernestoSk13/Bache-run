@@ -8,7 +8,7 @@ export const ITEM_NAMES: Record<ItemId, string> = { gordita: 'GORDITA DE CHICHAR
 export interface Input { throttle: number; steer: number; drift: boolean; item: boolean }
 export interface Bache { x: number; z: number; s: number; lat: number; r: number; type: 0 | 1 | 2; mesh: THREE.Mesh; temp: boolean; alive: boolean }
 interface Box { x: number; z: number; mesh: THREE.Mesh; cool: number }
-export interface RaceEvent { kind: 'bache' | 'flat' | 'item' | 'shield' | 'boost' | 'lap' | 'finish'; car: Car; value?: number; text?: string }
+export interface RaceEvent { kind: 'bache' | 'flat' | 'item' | 'shield' | 'boost' | 'lap' | 'finish'; car: Car; value?: number; text?: string; temp?: boolean }
 
 export const LAPS = 3;
 const DMG = [0, 9, 17];
@@ -184,7 +184,7 @@ export class Race {
         else {
           const dmg = Math.round(DMG[b.type] * c.dmgK); const k = [0.86, 0.72, 0.5][b.type];
           c.vx *= k; c.vz *= k; c.susp -= dmg; c.hits++; c.streak = 0; c.bounceV = 3 + b.type * 2.2;
-          this.events.push({ kind: 'bache', car: c, value: dmg });
+          this.events.push({ kind: 'bache', car: c, value: dmg, temp: b.temp });
           if (c.susp <= 0) { c.susp = 0; c.flat = 2; c.flats++; this.events.push({ kind: 'flat', car: c }); }
         }
         if (b.temp) { b.alive = false; b.mesh.visible = false; }

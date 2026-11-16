@@ -21,6 +21,22 @@ const hex = (n: number) => `#${n.toString(16).padStart(6, '0')}`;
 
 type State = 'title' | 'select' | 'count' | 'race' | 'results';
 
+/** Bache real documentado: foto y ubicacion. Ver docs/BACHES.md. */
+interface BacheReal { id: string; foto: string; ubicacion: string; colonia?: string; fecha?: string; estado?: string; credito?: string; ejemplo?: boolean; url: string }
+const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+const fechaCorta = (f?: string) => { const k = /^(\d{4})-(\d{2})$/.exec(f ?? ''); return k ? `${MESES[+k[2] - 1] ?? ''} ${k[1]}` : ''; };
+const metaDe = (b: BacheReal) => [b.colonia, b.estado === 'tapado' ? 'Ya lo taparon' : fechaCorta(b.fecha) && `Visto en ${fechaCorta(b.fecha)}`].filter(Boolean).join(' · ');
+
+async function loadBaches(conEjemplos: boolean): Promise<BacheReal[]> {
+  try {
+    const base = `${import.meta.env.BASE_URL}baches/`, raw: unknown = await (await fetch(`${base}baches.json`)).json();
+    if (!Array.isArray(raw)) return [];
+    const ok = raw.filter((b): b is BacheReal => !!b && typeof b.foto === 'string' && typeof b.ubicacion === 'string' && /^[\w.-]+$/.test(b.foto) && (conEjemplos || !b.ejemplo));
+    const res = await Promise.all(ok.map(async (b) => { const i = new Image(); i.src = b.url = base + b.foto; try { await i.decode(); return b; } catch { return null; } }));
+    return res.filter((b): b is BacheReal => !!b);
+  } catch { return []; }
+}
+
 async function boot() {
   await Promise.all(['400 40px "Bowlby One"', '600 40px "Barlow Condensed"'].map((f) => document.fonts.load(f).catch(() => [])));
   const canvas = document.getElementById('game') as HTMLCanvasElement;
@@ -31,7 +47,7 @@ async function boot() {
   const camera = new THREE.PerspectiveCamera(62, 1, 0.3, 6000);
 
   const track = new Track(BACHEPENDENCIA);
-  const world = await buildWorld(renderer, track);
+  const [world, reales] = await Promise.all([buildWorld(renderer, track), loadBaches(qs.has('ejemplos'))]);
   if (LOW) world.sun.shadow.mapSize.set(1024, 1024);
 
   const resize = () => { const w = innerWidth, h = innerHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); };
@@ -67,6 +83,7 @@ async function boot() {
   const sfx = new Sfx();
   let state: State = 'title', pilot = 'lonches', group = new THREE.Group(), race!: Race;
   let countT = 0, greenAt = 0, jumped = false, shake = 0, toastT = 0, hudT = 0, orbit = 0;
+  let vistos: BacheReal[] = [], lastFoto = -99, fotoT = 0;
   const newRace = () => { world.scene.remove(group); group = new THREE.Group(); world.scene.add(group); race = new Race(track, group, pilot, 1); camPos.set(0, 0, 0); };
   const camPos = new THREE.Vector3(), camLook = new THREE.Vector3();
   newRace();
@@ -116,6 +133,7 @@ async function boot() {
       <div class="x h-susp" style="left:50%;bottom:3vh;transform:translateX(-50%);width:26em"><div style="display:flex;justify-content:space-between"><span class="c e">Suspensión</span><span class="c" style="font-size:.85em" id="hits"></span></div><div class="meter" style="margin:.4em 0"><div id="susp"></div></div><div style="font-size:.85em" id="tip"></div></div>
       <div class="x h-kmh" style="right:2.4vw;bottom:3vh;text-align:right"><div class="d" style="font-size:3.6em;font-variant-numeric:tabular-nums" id="kmh"></div><div class="c" style="color:var(--gr);font-size:.9em">km/h</div></div>
       <div class="toast d" id="toast"></div>
+      <div class="foto" id="foto"><img alt=""><b class="c" id="fotoEj" hidden>Ejemplo</b><div class="c e">Bache real</div><div id="fotoLoc"></div><div id="fotoMeta"></div></div>
       <div class="lights" id="lights" hidden><i></i><i></i><i></i></div><div class="count d" id="count"></div>
       <div class="touch"><button data-k="l" style="left:3vw;bottom:24vh;width:9em;height:9em;font-size:1em">‹</button><button data-k="r" style="left:calc(3vw + 10em);bottom:24vh;width:9em;height:9em">›</button>
         <button data-k="gas" style="right:3vw;bottom:24vh;width:10em;height:10em;background:rgba(255,198,26,.85);color:var(--asf)">ACELERA</button><button data-k="drift" style="right:calc(3vw + 11em);bottom:24vh;width:7em;height:7em">DERRAPE</button>
@@ -128,10 +146,16 @@ async function boot() {
     });
   }
   const q = (id: string) => hud!.querySelector<HTMLElement>('#' + id)!;
+  const mostrarFoto = () => {
+    const libres = reales.filter((b) => !vistos.includes(b)); if (!hud || !libres.length) return;
+    const b = libres[Math.floor(Math.random() * libres.length)]; vistos.push(b); lastFoto = race.time; fotoT = 2.8;
+    q('foto').querySelector('img')!.src = b.url; q('fotoEj').hidden = !b.ejemplo; q('fotoLoc').textContent = b.ubicacion; q('fotoMeta').textContent = metaDe(b);
+    q('foto').classList.add('on');
+  };
   const toast = (t: string) => { if (!hud) return; const e = q('toast'); e.textContent = t; e.classList.add('on'); toastT = 1.1; };
 
   function startCount() {
-    newRace(); clear(); buildHud(); state = 'count'; countT = 0; greenAt = 3 + Math.random() * 2; jumped = false;
+    newRace(); clear(); buildHud(); vistos = []; lastFoto = -99; fotoT = 0; state = 'count'; countT = 0; greenAt = 3 + Math.random() * 2; jumped = false;
     q('lights').hidden = false;
   }
 
@@ -141,13 +165,23 @@ async function boot() {
     const prize = [1000, 700, 500, 400, 300, 200, 100, 0][p.place - 1] + p.dodged * 5;
     const s = $(`<div class="screen"><div class="row"><h1 class="d" style="font-size:2.6em;color:var(--am)">${p.place === 1 ? '¡GANASTE!' : 'RESULTADOS'}</h1><span class="c" style="color:var(--gr)">Bulevar Bachependencia</span></div>
       <div class="row" style="align-items:flex-start;gap:2.5em;flex-wrap:nowrap">
-      <table style="flex:1.2">${st.map((c) => `<tr class="${c.isPlayer ? 'me' : ''}"><td class="d">${c.place}</td><td>${c.def.pilot}${c.isPlayer ? ' (tú)' : ''}</td><td style="text-align:right">${c.finished ? fmt(c.time) : 'En pista'}</td></tr>`).join('')}</table>
+      <div style="flex:1.2;display:flex;flex-direction:column;gap:1em"><table>${st.map((c) => `<tr class="${c.isPlayer ? 'me' : ''}"><td class="d">${c.place}</td><td>${c.def.pilot}${c.isPlayer ? ' (tú)' : ''}</td><td style="text-align:right">${c.finished ? fmt(c.time) : 'En pista'}</td></tr>`).join('')}</table><div id="gal"></div></div>
       <div style="flex:1;display:flex;flex-direction:column;gap:1.2em"><div class="ticket"><b style="display:block;text-align:center;font-size:1.2em">TALLER "EL COMPA"</b><span style="display:block;text-align:center">Suspensiones, llantas y resignación</span><hr style="border:0;border-top:2px dashed var(--asf)">
         <div><span>${p.hits} baches x $180</span><span>${money(hitsCost)}</span></div><div><span>${p.flats} ponchaduras</span><span>${money(flatCost)}</span></div><div><span>Alineación y balanceo</span><span>${money(align)}</span></div>
         <hr style="border:0;border-top:2px dashed var(--asf)"><div style="font-weight:700;font-size:1.2em"><span>TOTAL</span><span>${money(total)}</span></div><div><span>Premio de carrera</span><span>-${money(prize)}</span></div>
         <div style="font-weight:700"><span>${total > prize ? 'Sales debiendo' : 'Te sobran'}</span><span>${money(Math.abs(total - prize))}</span></div></div>
         <div class="sign"><div class="c" style="font-size:.85em">Reporte ciudadano enviado · Folio BR-${String(1000 + Math.floor(Math.random() * 9000)).padStart(6, '0')}</div><div>Baches esquivados: ${p.dodged} · Mejor racha: ${p.bestStreak} · Mejor vuelta: ${fmt(p.bestLap)}</div><div>Atención estimada: 3 administraciones</div></div>
         <div class="row"><button class="btn" id="again">OTRA VUELTA</button><button class="btn g" id="chg">CAMBIAR PILOTO</button></div></div></div></div>`);
+    if (vistos.length) {
+      const gal = s.querySelector('#gal')!, h = document.createElement('div'), g = document.createElement('div');
+      h.className = 'c e'; h.textContent = `Baches reales que te comiste: ${vistos.length}`; g.className = 'gal';
+      for (const b of vistos) {
+        const f = document.createElement('figure'), im = document.createElement('img'), c = document.createElement('figcaption'), l = document.createElement('b'), mt = document.createElement('span');
+        im.src = b.url; im.alt = ''; l.textContent = (b.ejemplo ? 'EJEMPLO · ' : '') + b.ubicacion; mt.textContent = [metaDe(b), b.credito && `Foto: ${b.credito}`].filter(Boolean).join(' · ');
+        c.append(l, mt); f.append(im, c); g.append(f);
+      }
+      gal.append(h, g);
+    }
     ui.append(s); s.querySelector<HTMLElement>('#again')!.onclick = startCount; s.querySelector<HTMLElement>('#chg')!.onclick = showSelect;
   }
 
@@ -182,7 +216,7 @@ async function boot() {
 
     for (const e of race.events) {
       if (e.car !== p) continue;
-      if (e.kind === 'bache') { shake = 0.5 + (e.value ?? 0) * 0.03; sfx.thump(0.6 + (e.value ?? 0) / 25); toast(e.value ? `¡BACHE! −${e.value}` : '¡BACHE!'); }
+      if (e.kind === 'bache') { shake = 0.5 + (e.value ?? 0) * 0.03; sfx.thump(0.6 + (e.value ?? 0) / 25); toast(e.value ? `¡BACHE! −${e.value}` : '¡BACHE!'); if (e.value && !e.temp && race.time - lastFoto >= 8) mostrarFoto(); }
       if (e.kind === 'flat') { toast('¡PONCHADURA!'); sfx.thump(1.6); }
       if (e.kind === 'shield') { toast('La llanta de refacción te salvó'); sfx.beep(660, 0.1); }
       if (e.kind === 'item') { sfx.beep(990, 0.08); sfx.beep(1320, 0.12); }
@@ -213,6 +247,7 @@ async function boot() {
     // HUD
     if (hud) {
       toastT -= dt; if (toastT <= 0) q('toast').classList.remove('on');
+      if (fotoT > 0) { fotoT -= dt; if (fotoT <= 0) q('foto').classList.remove('on'); }
       hudT -= dt;
       if (hudT <= 0) {
         hudT = 0.08;
@@ -237,7 +272,7 @@ async function boot() {
     for (const c of [...race.cars].sort((a) => (a.isPlayer ? 1 : -1))) { const [x, y] = map(c.x, c.z); g.fillStyle = hex(c.def.color); g.strokeStyle = '#f6ecd6'; g.lineWidth = c.isPlayer ? 3 : 1.5; g.beginPath(); g.arc(x, y, c.isPlayer ? 7 : 4.5, 0, 7); g.fill(); g.stroke(); }
   }
 
-  Object.assign(window, { __br: { get race() { return race; }, get state() { return state; }, startCount, showResults, camera, dbg } });
+  Object.assign(window, { __br: { get race() { return race; }, get state() { return state; }, startCount, showResults, camera, dbg, reales } });
   frame();
 }
 

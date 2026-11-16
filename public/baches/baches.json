@@ -1,0 +1,42 @@
+[
+  {
+    "id": "ejemplo-1",
+    "foto": "ejemplo-1.jpg",
+    "ubicacion": "Tu calle esq. Tu avenida",
+    "colonia": "Tu colonia",
+    "fecha": "2026-11",
+    "estado": "activo",
+    "credito": "Dibujo provisional",
+    "ejemplo": true
+  },
+  {
+    "id": "ejemplo-2",
+    "foto": "ejemplo-2.jpg",
+    "ubicacion": "Aquí va el cruce de calles",
+    "colonia": "Aquí va la colonia",
+    "fecha": "2026-11",
+    "estado": "activo",
+    "credito": "Dibujo provisional",
+    "ejemplo": true
+  },
+  {
+    "id": "ejemplo-3",
+    "foto": "ejemplo-3.jpg",
+    "ubicacion": "Calle de ejemplo esq. Av. Provisional",
+    "colonia": "Col. Marcador",
+    "fecha": "2026-11",
+    "estado": "activo",
+    "credito": "Dibujo provisional",
+    "ejemplo": true
+  },
+  {
+    "id": "ejemplo-4",
+    "foto": "ejemplo-4.jpg",
+    "ubicacion": "El bache de tu cuadra",
+    "colonia": "Tu colonia",
+    "fecha": "2026-11",
+    "estado": "activo",
+    "credito": "Dibujo provisional",
+    "ejemplo": true
+  }
+]

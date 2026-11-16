@@ -20,5 +20,6 @@ Controles: flechas o WASD para manejar, Shift para derrapar, Espacio para usar e
 
 - `docs/PLAN.md`: diseño del juego, pantallas, herramientas y fases.
 - `docs/FOTOS.md`: fotos usadas, licencias y cómo se vuelven renderizables.
+- `docs/BACHES.md`: cómo agregar fotos de baches reales que aparecen al caer en uno.
 
-Parámetros de depuración en la URL: `?auto` (piloto automático), `?speed=10` (acelerar la simulación), `?q=low` (calidad baja).
+Parámetros de depuración en la URL: `?auto` (piloto automático), `?speed=10` (acelerar la simulación), `?q=low` (calidad baja), `?ejemplos` (muestra las fotos de bache provisionales).
